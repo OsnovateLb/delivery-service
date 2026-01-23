@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgres:18-alpine
+    container_name: delivery_db
+    environment:
+      POSTGRES_DB: delivery
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./init-db:/docker-entrypoint-initdb.d
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - delnet
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d delivery"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+  simulator:
+    build:
+      context: app/
+    container_name: delivery-script
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: delivery
+      DB_USER: user
+      DB_PASSWORD: password
+    networks:
+      - delnet
+
+
+volumes:
+  pgdata:
+
+networks:
+  delnet:
+    driver: bridge
