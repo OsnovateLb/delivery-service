@@ -3,4 +3,5 @@
 bash```docker compose up```
 
 Аналитика данных в Redash:
-<img width="1811" height="998" alt="image" src="https://github.com/user-attachments/assets/566aa26c-4020-43f1-92e0-0ba1585ebd1d" />
+<img width="1816" height="999" alt="image" src="https://github.com/user-attachments/assets/48e59fa4-1789-4ba0-b63e-4c9ea7ae41ce" />
+
