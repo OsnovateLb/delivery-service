@@ -37,6 +37,77 @@ services:
       - delnet
 
 
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    networks:
+      - delnet
+
+  redash_server:
+    image: redash/redash:25.8.0
+    container_name: redash_server
+    command: "dev_server"
+    ports:
+      - "5001:5000"
+    depends_on:
+      - db
+      - redis
+    environment:
+      REDASH_DATABASE_URL: "postgresql://user:password@db:5432/redash"
+      REDASH_REDIS_URL: "redis://redis:6379/0"
+      PYTHONUNBUFFERED: "1"
+      REDASH_HOST: "http://localhost:5001"
+      REDASH_MAIL_DEFAULT_SENDER: "noreply@example.com"
+      REDASH_COOKIE_SECRET: "a-very-secret-cookie-secret-key-123!"
+      REDASH_SECRET_KEY: "a-very-secret-secret-key-456!"
+    networks:
+      - delnet
+
+  redash_worker:
+    image: redash/redash:25.8.0
+    container_name: redash_worker
+    command: dev_worker
+    depends_on:
+      - redash_server
+    environment:
+      REDASH_DATABASE_URL: "postgresql://user:password@db:5432/redash"
+      REDASH_REDIS_URL: "redis://redis:6379/0"
+      PYTHONUNBUFFERED: "1"
+      REDASH_COOKIE_SECRET: "a-very-secret-cookie-secret-key-123!"
+      REDASH_SECRET_KEY: "a-very-secret-secret-key-456!"
+    networks:
+      - delnet
+
+  redash_scheduler:
+    image: redash/redash:25.8.0
+    container_name: redash_scheduler
+    command: dev_scheduler
+    depends_on:
+      - redash_server
+    environment:
+      REDASH_DATABASE_URL: "postgresql://user:password@db:5432/redash"
+      REDASH_REDIS_URL: "redis://redis:6379/0"
+      PYTHONUNBUFFERED: "1"
+      REDASH_COOKIE_SECRET: "a-very-secret-cookie-secret-key-123!"
+      REDASH_SECRET_KEY: "a-very-secret-secret-key-456!"
+    networks:
+      - delnet
+
+  redash_init:
+    image: redash/redash:25.8.0
+    container_name: redash_init
+    command: "bin/run ./manage.py database create_tables"
+    depends_on:
+      - redash_scheduler
+    environment:
+      REDASH_DATABASE_URL: "postgresql://user:password@db:5432/redash"
+      REDASH_REDIS_URL: "redis://redis:6379/0"
+      PYTHONUNBUFFERED: "1"
+      REDASH_COOKIE_SECRET: "a-very-secret-cookie-secret-key-123!"
+      REDASH_SECRET_KEY: "a-very-secret-secret-key-456!"
+    networks:
+      - delnet
+
 volumes:
   pgdata:
 
